@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pokemon & Simpsons Data</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 20px; }
+        h1 { color: #222; }
+        button { padding: 10px 20px; background: #1976d2; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+        th { background: #1976d2; color: white; }
+        img { height: 50px; }
+    </style>
+</head>
+<body>
+    <h1>Pokemon & Simpsons Data</h1>
+    <button onClick="loadData()">Load Data</button>
+    <table id="data-table">
+        <thead>
+            <tr>
+                <th>Type</th>
+                <th>Name</th>
+                <th>Details</th>
+                <th>Image</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <script>
+        async function loadData() {
+            const response = await fetch('/data');
+            const data = await response.json();
+            const tbody = document.querySelector('#data-table tbody');
+            tbody.innerHTML = '';
+            data.forEach(item => {
+                const row = `
+                    <tr>
+                        <td>${item.type}</td>
+                        <td>${item.name}</td>
+                        <td>${item.details}</td>
+                        <td><img src="${item.image}" alt="${item.name}"></td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+    </script>
+</body>
+</html>
