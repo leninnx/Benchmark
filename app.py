@@ -33,29 +33,41 @@ def get_data():
     except requests.exceptions.RequestException as e:
         data.append({"type": "Pokemon", "error": str(e)})
 
-    # --- Los Simpson ---
+    # --- Rick & Morty (GraphQL) ---
     try:
-        simpson_url = "https://thesimpsonsquoteapi.glitch.me/quotes?count=5"
-        simpson_response = requests.get(simpson_url)
-        simpson_response.raise_for_status()
-        simpson_json = simpson_response.json()
+        rick_url = "https://rickandmortyapi.com/graphql"
+        query = """
+        {
+          characters(page:1) {
+            results {
+              id
+              name
+              species
+              status
+              image
+            }
+          }
+        }
+        """
+        response = requests.post(rick_url, json={'query': query})
+        response.raise_for_status()
+        data_graphql = response.json()
 
-        simpsons = []
-        for item in simpson_json:
-            simpsons.append({
-                "type": "Simpsons",
-                "name": item.get("character", "Unknown"),
-                "details": item.get("quote", ""),
-                "image": item.get("image", "")
+        for char in data_graphql['data']['characters']['results']:
+            data.append({
+                "type": "Rick & Morty",
+                "name": char['name'],
+                "details": f"{char['species']} - {char['status']}",
+                "image": char['image']
             })
-        data.extend(simpsons)
     except requests.exceptions.RequestException as e:
-        data.append({"type": "Simpsons", "error": str(e)})
-    except ValueError:
-        # JSON inválido
-        data.append({"type": "Simpsons", "error": "Respuesta no es JSON válido"})
+        data.append({"type": "Rick & Morty", "error": str(e)})
+    except (KeyError, ValueError):
+        data.append({"type": "Rick & Morty", "error": "Respuesta GraphQL inválida"})
 
     return jsonify(data)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=10000)
+    import os
+    port = int(os.environ.get('PORT', 10000))
+    app.run(host='0.0.0.0', port=port)
