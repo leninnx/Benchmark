@@ -7,24 +7,15 @@
         body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 20px; }
         h1 { color: #222; }
         button { padding: 10px 20px; background: #1976d2; color: white; border: none; border-radius: 5px; cursor: pointer; }
-
-        /* Cuadros de información */
-        .info-container { display: flex; gap: 20px; margin-bottom: 20px; }
-        .info-box {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            flex: 1;
-        }
-        .info-box h2 { margin-top: 0; color: #1976d2; }
-        .info-box p { margin: 5px 0; }
-
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
         th { background: #1976d2; color: white; }
         img { height: 50px; }
         .error { color: red; font-weight: bold; }
+        .info-box { border: 1px solid #1976d2; padding: 10px; border-radius: 5px; flex: 1; }
+        .pokemon-box { background: #e3f2fd; }
+        .rm-box { background: #fce4ec; }
+        .info-container { display: flex; gap: 20px; margin-bottom: 20px; }
     </style>
 </head>
 <body>
@@ -32,18 +23,19 @@
 
     <!-- Cuadros de información -->
     <div class="info-container">
-        <div class="info-box" id="pokemon-info">
-            <h2>Pokemon (RESTful)</h2>
-            <p>Registros: <span id="pokemon-count">0</span></p>
-            <p>Tiempo: <span id="pokemon-time">0 ms</span></p>
+        <div class="info-box pokemon-box">
+            <h3>Pokemon (RESTful)</h3>
+            <p id="poke-records">Registros: -</p>
+            <p id="poke-time">Tiempo: -</p>
         </div>
-        <div class="info-box" id="rick-info">
-            <h2>Rick & Morty (GraphQL)</h2>
-            <p>Registros: <span id="rick-count">0</span></p>
-            <p>Tiempo: <span id="rick-time">0 ms</span></p>
+        <div class="info-box rm-box">
+            <h3>Rick & Morty (GraphQL)</h3>
+            <p id="rm-records">Registros: -</p>
+            <p id="rm-time">Tiempo: -</p>
         </div>
     </div>
 
+    <!-- Tabla de datos -->
     <button onClick="loadData()">Load Data</button>
     <table id="data-table">
         <thead>
@@ -63,45 +55,45 @@
             tbody.innerHTML = '<tr><td colspan="4">Loading...</td></tr>';
 
             try {
-                const startTime = performance.now(); // tiempo total
                 const response = await fetch('/data');
-                const data = await response.json();
-                const endTime = performance.now();
-                tbody.innerHTML = '';
-
-                // Contadores para cada tipo
-                let pokemonCount = 0;
-                let rickCount = 0;
-
-                data.forEach(item => {
-                    if (!item.error) {
-                        if (item.type === "Pokemon") pokemonCount++;
-                        if (item.type === "Rick & Morty") rickCount++;
-                    }
-
-                    const row = item.error ? `
-                        <tr>
-                            <td colspan="4" class="error">Error cargando ${item.type}: ${item.error}</td>
-                        </tr>
-                    ` : `
-                        <tr>
-                            <td>${item.type}</td>
-                            <td>${item.name}</td>
-                            <td>${item.details}</td>
-                            <td>${item.image ? `<img src="${item.image}" alt="${item.name}">` : 'No image'}</td>
-                        </tr>
-                    `;
-                    tbody.innerHTML += row;
-                });
+                const result = await response.json();
+                const data = result.data;
+                const info = result.info;
 
                 // Actualizar cuadros de información
-                document.getElementById('pokemon-count').textContent = pokemonCount;
-                document.getElementById('rick-count').textContent = rickCount;
+                info.forEach(item => {
+                    if(item.type === "Pokemon") {
+                        document.getElementById('poke-records').textContent = `Registros: ${item.records}`;
+                        document.getElementById('poke-time').textContent = `Tiempo: ${item.time}`;
+                    }
+                    if(item.type === "Rick & Morty") {
+                        document.getElementById('rm-records').textContent = `Registros: ${item.records}`;
+                        document.getElementById('rm-time').textContent = `Tiempo: ${item.time}`;
+                    }
+                });
 
-                // Por ahora tiempo total de carga
-                const totalTime = Math.round(endTime - startTime);
-                document.getElementById('pokemon-time').textContent = `${totalTime} ms`;
-                document.getElementById('rick-time').textContent = `${totalTime} ms`;
+                // Mostrar datos en la tabla
+                tbody.innerHTML = '';
+                data.forEach(item => {
+                    let row = '';
+                    if(item.error) {
+                        row = `
+                            <tr>
+                                <td colspan="4" class="error">Error cargando ${item.type}: ${item.error}</td>
+                            </tr>
+                        `;
+                    } else {
+                        row = `
+                            <tr>
+                                <td>${item.type}</td>
+                                <td>${item.name}</td>
+                                <td>${item.details}</td>
+                                <td>${item.image ? `<img src="${item.image}" alt="${item.name}">` : 'No image'}</td>
+                            </tr>
+                        `;
+                    }
+                    tbody.innerHTML += row;
+                });
 
             } catch (e) {
                 tbody.innerHTML = `
