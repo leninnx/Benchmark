@@ -53,7 +53,7 @@ def get_data():
         response.raise_for_status()
         data_graphql = response.json()
 
-        for char in data_graphql['data']['characters']['results']:
+        for char in data_graphql['data']['characters']['results'][:5]:
             data.append({
                 "type": "Rick & Morty",
                 "name": char['name'],
@@ -71,3 +71,4 @@ if __name__ == '__main__':
     import os
     port = int(os.environ.get('PORT', 10000))
     app.run(host='0.0.0.0', port=port)
+
