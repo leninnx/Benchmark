@@ -1,5 +1,7 @@
 from flask import Flask, render_template, jsonify
 import requests
+import time
+import os
 
 app = Flask(__name__)
 
@@ -11,7 +13,9 @@ def home():
 def get_data():
     data = []
 
-    # --- Pokémon ---
+    # --- Pokémon (REST) ---
+    poke_info = {}
+    start = time.perf_counter()
     try:
         poke_url = "https://pokeapi.co/api/v2/pokemon?limit=5"
         poke_response = requests.get(poke_url)
@@ -30,10 +34,14 @@ def get_data():
                 "image": details["sprites"]["front_default"]
             })
         data.extend(pokemons)
+        end = time.perf_counter()
+        poke_info = {"type": "Pokemon", "records": len(pokemons), "time": f"{(end-start):.2f} s"}
     except requests.exceptions.RequestException as e:
-        data.append({"type": "Pokemon", "error": str(e)})
+        poke_info = {"type": "Pokemon", "error": str(e), "records": 0, "time": "0 s"}
 
     # --- Rick & Morty (GraphQL) ---
+    rm_info = {}
+    start = time.perf_counter()
     try:
         rick_url = "https://rickandmortyapi.com/graphql"
         query = """
@@ -60,15 +68,16 @@ def get_data():
                 "details": f"{char['species']} - {char['status']}",
                 "image": char['image']
             })
+        end = time.perf_counter()
+        rm_info = {"type": "Rick & Morty", "records": 5, "time": f"{(end-start):.2f} s"}
     except requests.exceptions.RequestException as e:
-        data.append({"type": "Rick & Morty", "error": str(e)})
+        rm_info = {"type": "Rick & Morty", "error": str(e), "records": 0, "time": "0 s"}
     except (KeyError, ValueError):
-        data.append({"type": "Rick & Morty", "error": "Respuesta GraphQL inválida"})
+        rm_info = {"type": "Rick & Morty", "error": "Respuesta GraphQL inválida", "records": 0, "time": "0 s"}
 
-    return jsonify(data)
+    # --- Devolver datos y info ---
+    return jsonify({"data": data, "info": [poke_info, rm_info]})
 
 if __name__ == '__main__':
-    import os
     port = int(os.environ.get('PORT', 10000))
     app.run(host='0.0.0.0', port=port)
-
