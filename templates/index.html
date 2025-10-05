@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Pokemon, Rick & Morty & CSV Data</title>
+    <title>Pokemon & Rick & Morty Data</title>
     <style>
         body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 20px; }
         h1 { color: #222; }
@@ -15,12 +15,11 @@
         .info-box { border: 1px solid #1976d2; padding: 10px; border-radius: 5px; flex: 1; }
         .pokemon-box { background: #e3f2fd; }
         .rm-box { background: #fce4ec; }
-        .csv-box { background: #e8f5e9; }
         .info-container { display: flex; gap: 20px; margin-bottom: 20px; }
     </style>
 </head>
 <body>
-    <h1>Pokemon, Rick & Morty & CSV Data</h1>
+    <h1>Pokemon & Rick & Morty Data</h1>
 
     <!-- Cuadros de información -->
     <div class="info-container">
@@ -37,13 +36,6 @@
             <p id="rm-time-total">Tiempo total: -</p>
             <p id="rm-size">Tamaño respuesta: - bytes</p>
             <p id="rm-calls">Llamadas: -</p>
-        </div>
-        <div class="info-box csv-box">
-            <h3>Batch CSV/XLS</h3>
-            <p id="csv-records">Registros: -</p>
-            <p id="csv-time-total">Tiempo total: -</p>
-            <p id="csv-size">Tamaño respuesta: - bytes</p>
-            <p id="csv-calls">Llamadas: -</p>
         </div>
     </div>
 
@@ -85,12 +77,6 @@
                         document.getElementById('rm-time-total').textContent = `Tiempo total: ${item.time_total}`;
                         document.getElementById('rm-size').textContent = `Tamaño respuesta: ${item.size_bytes} bytes`;
                         document.getElementById('rm-calls').textContent = `Llamadas: ${item.calls}`;
-                    }
-                    if(item.type === "CSV") {
-                        document.getElementById('csv-records').textContent = `Registros: ${item.records}`;
-                        document.getElementById('csv-time-total').textContent = `Tiempo total: ${item.time_total}`;
-                        document.getElementById('csv-size').textContent = `Tamaño respuesta: ${item.size_bytes} bytes`;
-                        document.getElementById('csv-calls').textContent = `Llamadas: ${item.calls}`;
                     }
                 });
 
