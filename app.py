@@ -16,15 +16,17 @@ def get_data():
     # --- Pokémon (REST) ---
     poke_info = {}
     poke_times = []
-    start_total = time.perf_counter()
     total_bytes = 0
+    calls = 0
+    start_total = time.perf_counter()
     try:
         poke_url = "https://pokeapi.co/api/v2/pokemon?limit=5"
         response = requests.get(poke_url)
         response.raise_for_status()
-        poke_json = response.json()
         total_bytes += len(response.content)
+        calls += 1
         
+        poke_json = response.json()
         pokemons = []
         for item in poke_json["results"]:
             start = time.perf_counter()
@@ -33,6 +35,7 @@ def get_data():
             end = time.perf_counter()
             poke_times.append(end - start)
             total_bytes += len(details_response.content)
+            calls += 1
 
             details = details_response.json()
             pokemons.append({
@@ -48,13 +51,11 @@ def get_data():
             "type": "Pokemon",
             "records": len(pokemons),
             "time_total": f"{(end_total-start_total):.3f} s",
-            "time_avg": f"{(sum(poke_times)/len(poke_times)):.3f} s",
-            "time_min": f"{min(poke_times):.3f} s",
-            "time_max": f"{max(poke_times):.3f} s",
-            "size_bytes": total_bytes
+            "size_bytes": total_bytes,
+            "calls": calls
         }
     except requests.exceptions.RequestException as e:
-        poke_info = {"type": "Pokemon", "error": str(e), "records": 0, "time_total": "0 s", "size_bytes": 0}
+        poke_info = {"type": "Pokemon", "error": str(e), "records": 0, "time_total": "0 s", "size_bytes": 0, "calls": calls}
 
     # --- Rick & Morty (GraphQL) ---
     rm_info = {}
@@ -91,13 +92,14 @@ def get_data():
             "type": "Rick & Morty",
             "records": 5,
             "time_total": f"{(end_total-start_total):.3f} s",
-            "size_bytes": len(response.content)
+            "size_bytes": len(response.content),
+            "calls": 1
         }
 
     except requests.exceptions.RequestException as e:
-        rm_info = {"type": "Rick & Morty", "error": str(e), "records": 0, "time_total": "0 s", "size_bytes": 0}
+        rm_info = {"type": "Rick & Morty", "error": str(e), "records": 0, "time_total": "0 s", "size_bytes": 0, "calls": 1}
     except (KeyError, ValueError):
-        rm_info = {"type": "Rick & Morty", "error": "Respuesta GraphQL inválida", "records": 0, "time_total": "0 s", "size_bytes": 0}
+        rm_info = {"type": "Rick & Morty", "error": "Respuesta GraphQL inválida", "records": 0, "time_total": "0 s", "size_bytes": 0, "calls": 1}
 
     return jsonify({"data": data, "info": [poke_info, rm_info]})
 
