@@ -26,16 +26,21 @@
         <div class="info-box pokemon-box">
             <h3>Pokemon (RESTful)</h3>
             <p id="poke-records">Registros: -</p>
-            <p id="poke-time">Tiempo: -</p>
+            <p id="poke-time-total">Tiempo total: -</p>
+            <p id="poke-time-avg">Tiempo promedio: -</p>
+            <p id="poke-time-min">Tiempo mínimo: -</p>
+            <p id="poke-time-max">Tiempo máximo: -</p>
+            <p id="poke-size">Tamaño respuesta: - bytes</p>
         </div>
         <div class="info-box rm-box">
             <h3>Rick & Morty (GraphQL)</h3>
             <p id="rm-records">Registros: -</p>
-            <p id="rm-time">Tiempo: -</p>
+            <p id="rm-time-total">Tiempo total: -</p>
+            <p id="rm-size">Tamaño respuesta: - bytes</p>
         </div>
     </div>
 
-    <!-- Tabla de datos -->
+    <!-- Botón y tabla de datos -->
     <button onClick="loadData()">Load Data</button>
     <table id="data-table">
         <thead>
@@ -64,11 +69,16 @@
                 info.forEach(item => {
                     if(item.type === "Pokemon") {
                         document.getElementById('poke-records').textContent = `Registros: ${item.records}`;
-                        document.getElementById('poke-time').textContent = `Tiempo: ${item.time}`;
+                        document.getElementById('poke-time-total').textContent = `Tiempo total: ${item.time_total}`;
+                        document.getElementById('poke-time-avg').textContent = `Tiempo promedio: ${item.time_avg}`;
+                        document.getElementById('poke-time-min').textContent = `Tiempo mínimo: ${item.time_min}`;
+                        document.getElementById('poke-time-max').textContent = `Tiempo máximo: ${item.time_max}`;
+                        document.getElementById('poke-size').textContent = `Tamaño respuesta: ${item.size_bytes} bytes`;
                     }
                     if(item.type === "Rick & Morty") {
                         document.getElementById('rm-records').textContent = `Registros: ${item.records}`;
-                        document.getElementById('rm-time').textContent = `Tiempo: ${item.time}`;
+                        document.getElementById('rm-time-total').textContent = `Tiempo total: ${item.time_total}`;
+                        document.getElementById('rm-size').textContent = `Tamaño respuesta: ${item.size_bytes} bytes`;
                     }
                 });
 
