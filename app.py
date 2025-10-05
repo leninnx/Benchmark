@@ -1,5 +1,6 @@
 from flask import Flask, render_template, jsonify
 import requests
+import pandas as pd
 import time
 import os
 
@@ -101,7 +102,44 @@ def get_data():
     except (KeyError, ValueError):
         rm_info = {"type": "Rick & Morty", "error": "Respuesta GraphQL inválida", "records": 0, "time_total": "0 s", "size_bytes": 0, "calls": 1}
 
-    return jsonify({"data": data, "info": [poke_info, rm_info]})
+    # --- Batch Load CSV/XLS ---
+    csv_info = {}
+    start_total = time.perf_counter()
+    try:
+        df = pd.read_csv("archivo.csv")  # si quieres Excel: pd.read_excel("archivo.xlsx")
+        df_sample = df.head(5)  # solo 5 registros
+
+        csv_data = []
+        for _, row in df_sample.iterrows():
+            csv_data.append({
+                "type": "CSV",
+                "name": row["Nombre"],
+                "details": f"Edad: {row['Edad']}, Altura: {row['Altura']}, Peso: {row['Peso']}, Estado: {row['Estado']}",
+                "image": ""
+            })
+
+        end_total = time.perf_counter()
+        csv_info = {
+            "type": "CSV",
+            "records": len(df_sample),
+            "time_total": f"{(end_total-start_total):.3f} s",
+            "size_bytes": os.path.getsize("archivo.csv"),
+            "calls": 1
+        }
+
+        data.extend(csv_data)
+
+    except Exception as e:
+        csv_info = {
+            "type": "CSV",
+            "error": str(e),
+            "records": 0,
+            "time_total": "0 s",
+            "size_bytes": 0,
+            "calls": 1
+        }
+
+    return jsonify({"data": data, "info": [poke_info, rm_info, csv_info]})
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 10000))
