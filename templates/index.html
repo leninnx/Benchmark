@@ -22,81 +22,95 @@
     <h1>Pokemon & Rick & Morty Data</h1>
 
     <!-- Cuadros de información -->
-<div class="info-container">
-    <div class="info-box pokemon-box">
-        <h3>Pokemon (RESTful)</h3>
-        <p id="poke-records">Registros: -</p>
-        <p id="poke-time-total">Tiempo total: -</p>
-        <p id="poke-size">Tamaño respuesta: - bytes</p>
-        <p id="poke-calls">Llamadas: -</p>
+    <div class="info-container">
+        <div class="info-box pokemon-box">
+            <h3>Pokemon (RESTful)</h3>
+            <p id="poke-records">Registros: -</p>
+            <p id="poke-time-total">Tiempo total: -</p>
+            <p id="poke-size">Tamaño respuesta: - bytes</p>
+            <p id="poke-calls">Llamadas: -</p>
+        </div>
+        <div class="info-box rm-box">
+            <h3>Rick & Morty (GraphQL)</h3>
+            <p id="rm-records">Registros: -</p>
+            <p id="rm-time-total">Tiempo total: -</p>
+            <p id="rm-size">Tamaño respuesta: - bytes</p>
+            <p id="rm-calls">Llamadas: -</p>
+        </div>
     </div>
-    <div class="info-box rm-box">
-        <h3>Rick & Morty (GraphQL)</h3>
-        <p id="rm-records">Registros: -</p>
-        <p id="rm-time-total">Tiempo total: -</p>
-        <p id="rm-size">Tamaño respuesta: - bytes</p>
-        <p id="rm-calls">Llamadas: -</p>
-    </div>
-</div>
 
-<script>
-    async function loadData() {
-        const tbody = document.querySelector('#data-table tbody');
-        tbody.innerHTML = '<tr><td colspan="4">Loading...</td></tr>';
+    <!-- Botón y tabla de datos -->
+    <button onClick="loadData()">Load Data</button>
+    <table id="data-table">
+        <thead>
+            <tr>
+                <th>Type</th>
+                <th>Name</th>
+                <th>Details</th>
+                <th>Image</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
 
-        try {
-            const response = await fetch('/data');
-            const result = await response.json();
-            const data = result.data;
-            const info = result.info;
+    <script>
+        async function loadData() {
+            const tbody = document.querySelector('#data-table tbody');
+            tbody.innerHTML = '<tr><td colspan="4">Loading...</td></tr>';
 
-            // Actualizar cuadros
-            info.forEach(item => {
-                if(item.type === "Pokemon") {
-                    document.getElementById('poke-records').textContent = `Registros: ${item.records}`;
-                    document.getElementById('poke-time-total').textContent = `Tiempo total: ${item.time_total}`;
-                    document.getElementById('poke-size').textContent = `Tamaño respuesta: ${item.size_bytes} bytes`;
-                    document.getElementById('poke-calls').textContent = `Llamadas: ${item.calls}`;
-                }
-                if(item.type === "Rick & Morty") {
-                    document.getElementById('rm-records').textContent = `Registros: ${item.records}`;
-                    document.getElementById('rm-time-total').textContent = `Tiempo total: ${item.time_total}`;
-                    document.getElementById('rm-size').textContent = `Tamaño respuesta: ${item.size_bytes} bytes`;
-                    document.getElementById('rm-calls').textContent = `Llamadas: ${item.calls}`;
-                }
-            });
+            try {
+                const response = await fetch('/data');
+                const result = await response.json();
+                const data = result.data;
+                const info = result.info;
 
-            // Mostrar datos en la tabla
-            tbody.innerHTML = '';
-            data.forEach(item => {
-                let row = '';
-                if(item.error) {
-                    row = `
-                        <tr>
-                            <td colspan="4" class="error">Error cargando ${item.type}: ${item.error}</td>
-                        </tr>
-                    `;
-                } else {
-                    row = `
-                        <tr>
-                            <td>${item.type}</td>
-                            <td>${item.name}</td>
-                            <td>${item.details}</td>
-                            <td>${item.image ? `<img src="${item.image}" alt="${item.name}">` : 'No image'}</td>
-                        </tr>
-                    `;
-                }
-                tbody.innerHTML += row;
-            });
+                // Actualizar cuadros
+                info.forEach(item => {
+                    if(item.type === "Pokemon") {
+                        document.getElementById('poke-records').textContent = `Registros: ${item.records}`;
+                        document.getElementById('poke-time-total').textContent = `Tiempo total: ${item.time_total}`;
+                        document.getElementById('poke-size').textContent = `Tamaño respuesta: ${item.size_bytes} bytes`;
+                        document.getElementById('poke-calls').textContent = `Llamadas: ${item.calls}`;
+                    }
+                    if(item.type === "Rick & Morty") {
+                        document.getElementById('rm-records').textContent = `Registros: ${item.records}`;
+                        document.getElementById('rm-time-total').textContent = `Tiempo total: ${item.time_total}`;
+                        document.getElementById('rm-size').textContent = `Tamaño respuesta: ${item.size_bytes} bytes`;
+                        document.getElementById('rm-calls').textContent = `Llamadas: ${item.calls}`;
+                    }
+                });
 
-        } catch (e) {
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="4" class="error">Error al cargar los datos: ${e.message}</td>
-                </tr>
-            `;
+                // Mostrar datos en la tabla
+                tbody.innerHTML = '';
+                data.forEach(item => {
+                    let row = '';
+                    if(item.error) {
+                        row = `
+                            <tr>
+                                <td colspan="4" class="error">Error cargando ${item.type}: ${item.error}</td>
+                            </tr>
+                        `;
+                    } else {
+                        row = `
+                            <tr>
+                                <td>${item.type}</td>
+                                <td>${item.name}</td>
+                                <td>${item.details}</td>
+                                <td>${item.image ? `<img src="${item.image}" alt="${item.name}">` : 'No image'}</td>
+                            </tr>
+                        `;
+                    }
+                    tbody.innerHTML += row;
+                });
+
+            } catch (e) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="error">Error al cargar los datos: ${e.message}</td>
+                    </tr>
+                `;
+            }
         }
-    }
-</script>
+    </script>
 </body>
 </html>
