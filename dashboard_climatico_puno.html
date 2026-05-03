@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pipeline Climático — Puno, Perú</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root {
+  --bg: #0a0e17;
+  --bg2: #111827;
+  --bg3: #1a2236;
+  --card: #141c2e;
+  --border: rgba(99,179,237,0.12);
+  --border2: rgba(99,179,237,0.25);
+  --accent: #63b3ed;
+  --accent2: #48bb78;
+  --accent3: #f6ad55;
+  --accent4: #fc8181;
+  --accent5: #b794f4;
+  --text: #e2e8f0;
+  --muted: #718096;
+  --muted2: #a0aec0;
+  --font-head: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+  --glow: 0 0 30px rgba(99,179,237,0.08);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-weight: 300;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* GRID BG */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(99,179,237,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99,179,237,0.03) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── UPLOAD SCREEN ── */
+#upload-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  position: relative;
+  z-index: 1;
+}
+.logo-area {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+.logo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(99,179,237,0.08);
+  border: 1px solid var(--border2);
+  border-radius: 999px;
+  padding: 6px 16px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 1.5rem;
+}
+.logo-badge::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent2);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
+
+.main-title {
+  font-family: var(--font-head);
+  font-size: clamp(2.2rem, 5vw, 4rem);
+  font-weight: 800;
+  line-height: 1.05;
+  color: var(--text);
+  margin-bottom: 1rem;
+}
+.main-title span { color: var(--accent); }
+.main-sub {
+  font-size: 1rem;
+  color: var(--muted2);
+  max-width: 480px;
+  line-height: 1.7;
+  margin: 0 auto 2.5rem;
+}
+
+/* Upload zone */
+.upload-zone {
+  width: 100%;
+  max-width: 560px;
+  border: 2px dashed var(--border2);
+  border-radius: 20px;
+  padding: 3rem 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  background: rgba(99,179,237,0.02);
+  position: relative;
+  overflow: hidden;
+}
+.upload-zone:hover, .upload-zone.drag-over {
+  border-color: var(--accent);
+  background: rgba(99,179,237,0.06);
+  box-shadow: var(--glow);
+}
+.upload-zone::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(99,179,237,0.04), transparent 70%);
+  pointer-events: none;
+}
+.upload-icon {
+  width: 64px; height: 64px;
+  margin: 0 auto 1.5rem;
+  background: rgba(99,179,237,0.1);
+  border: 1px solid var(--border2);
+  border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+}
+.upload-icon svg { width: 28px; height: 28px; stroke: var(--accent); fill: none; stroke-width: 1.5; }
+.upload-label {
+  font-family: var(--font-head);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.5rem;
+}
+.upload-hint { font-size: 0.85rem; color: var(--muted); margin-bottom: 1.5rem; }
+.upload-btn {
+  display: inline-block;
+  padding: 10px 24px;
+  background: var(--accent);
+  color: var(--bg);
+  border-radius: 8px;
+  font-family: var(--font-head);
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: opacity 0.2s, transform 0.1s;
+  letter-spacing: 0.02em;
+}
+.upload-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+#file-input { display: none; }
+
+.pipeline-preview {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-top: 3rem;
+  max-width: 700px;
+}
+.pipe-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+}
+.pipe-circle {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  border: 1px solid;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 500;
+  position: relative;
+}
+.pipe-circle.c1 { border-color: var(--accent); color: var(--accent); background: rgba(99,179,237,0.08); }
+.pipe-circle.c2 { border-color: var(--accent2); color: var(--accent2); background: rgba(72,187,120,0.08); }
+.pipe-circle.c3 { border-color: var(--accent3); color: var(--accent3); background: rgba(246,173,85,0.08); }
+.pipe-circle.c4 { border-color: var(--accent5); color: var(--accent5); background: rgba(183,148,244,0.08); }
+.pipe-circle.c5 { border-color: var(--accent4); color: var(--accent4); background: rgba(252,129,129,0.08); }
+.pipe-label { font-size: 10px; color: var(--muted); text-align: center; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.08em; }
+.pipe-arrow { font-size: 16px; color: var(--border2); padding: 0 2px; flex-shrink: 0; margin-bottom: 18px; }
+
+/* ── DASHBOARD ── */
+#dashboard { display: none; position: relative; z-index: 1; }
+
+/* TOP BAR */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(10,14,23,0.92);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.topbar-title {
+  font-family: var(--font-head);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.02em;
+}
+.topbar-meta { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+.reset-btn {
+  padding: 6px 14px;
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted2);
+  font-size: 12px;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.reset-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* PIPELINE STRIP */
+.pipeline-strip {
+  display: flex;
+  overflow-x: auto;
+  gap: 0;
+  padding: 0 2rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+}
+.pstep {
+  flex: 1;
+  min-width: 140px;
+  padding: 14px 16px;
+  border-right: 1px solid var(--border);
+  position: relative;
+}
+.pstep:last-child { border-right: none; }
+.pstep::after {
+  content: '→';
+  position: absolute;
+  right: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  font-size: 14px;
+  z-index: 2;
+}
+.pstep:last-child::after { display: none; }
+.pstep-num { font-family: var(--font-mono); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
+.pstep-name { font-family: var(--font-head); font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+.pstep-tech { font-size: 11px; color: var(--muted); font-family: var(--font-mono); }
+.pstep.active .pstep-name { color: var(--accent4); }
+.pstep:not(.active) .pstep-name { color: var(--muted2); }
+.pstep.done .pstep-name { color: var(--accent2); }
+
+/* MAIN */
+.main { padding: 2rem; max-width: 1400px; margin: 0 auto; }
+
+/* KPI CARDS */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 2rem;
+}
+.kpi {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.2rem 1.4rem;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.kpi:hover { border-color: var(--border2); }
+.kpi::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+}
+.kpi.k1::before { background: var(--accent); }
+.kpi.k2::before { background: var(--accent2); }
+.kpi.k3::before { background: var(--accent3); }
+.kpi.k4::before { background: var(--accent5); }
+.kpi.k5::before { background: var(--accent4); }
+.kpi.k6::before { background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+.kpi-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; font-family: var(--font-mono); margin-bottom: 8px; }
+.kpi-val { font-family: var(--font-head); font-size: 2rem; font-weight: 800; line-height: 1; }
+.kpi-unit { font-size: 12px; color: var(--muted); margin-top: 4px; font-family: var(--font-mono); }
+.kpi.k1 .kpi-val { color: var(--accent); }
+.kpi.k2 .kpi-val { color: var(--accent2); }
+.kpi.k3 .kpi-val { color: var(--accent3); }
+.kpi.k4 .kpi-val { color: var(--accent5); }
+.kpi.k5 .kpi-val { color: var(--accent4); }
+.kpi.k6 .kpi-val { color: var(--text); }
+
+/* YEAR FILTER */
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.section-title {
+  font-family: var(--font-head);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.filter-tabs {
+  display: flex;
+  gap: 6px;
+}
+.ftab {
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted2);
+  font-size: 12px;
+  font-family: var(--font-mono);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.ftab.active, .ftab:hover { border-color: var(--accent); color: var(--accent); background: rgba(99,179,237,0.06); }
+
+/* CHARTS GRID */
+.charts-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 2rem;
+}
+@media(max-width:760px) { .charts-grid-2 { grid-template-columns: 1fr; } }
+
+.chart-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.4rem;
+  position: relative;
+  overflow: hidden;
+}
+.chart-card:hover { border-color: var(--border2); }
+.chart-card-title {
+  font-family: var(--font-head);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+.chart-card-sub {
+  font-size: 11px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  margin-bottom: 12px;
+}
+.chart-legend {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.cl-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--muted2);
+  font-family: var(--font-mono);
+}
+.cl-dot { width: 8px; height: 8px; border-radius: 2px; }
+
+/* WIDE CHART */
+.charts-grid-wide {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+  margin-bottom: 2rem;
+}
+@media(max-width:900px) { .charts-grid-wide { grid-template-columns: 1fr; } }
+
+/* SEASONAL TABLE */
+.season-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.season-table th {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+.season-table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid rgba(99,179,237,0.05);
+  color: var(--muted2);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.season-table tr:hover td { background: rgba(99,179,237,0.03); }
+.season-table td.val { color: var(--text); font-weight: 500; }
+.season-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-family: var(--font-mono);
+}
+.season-badge.lluvia { background: rgba(99,179,237,0.12); color: var(--accent); }
+.season-badge.seca { background: rgba(246,173,85,0.12); color: var(--accent3); }
+.season-badge.trans { background: rgba(72,187,120,0.12); color: var(--accent2); }
+
+/* METADATA */
+.meta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+  margin-bottom: 2rem;
+}
+.meta-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+.meta-key { font-family: var(--font-mono); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+.meta-val { font-size: 13px; color: var(--text); font-weight: 400; }
+
+/* FOOTER */
+.dash-footer {
+  border-top: 1px solid var(--border);
+  padding: 1.5rem 2rem;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+}
+
+/* LOADING */
+#loading-screen {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 200;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+}
+.loader-ring {
+  width: 56px; height: 56px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loader-msg { font-family: var(--font-mono); font-size: 13px; color: var(--muted); }
+
+/* ANIMATIONS */
+.fade-in { animation: fadeIn 0.5s ease forwards; }
+@keyframes fadeIn { from { opacity:0; transform: translateY(12px); } to { opacity:1; transform:none; } }
+.stagger > * { opacity: 0; animation: fadeIn 0.4s ease forwards; }
+.stagger > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger > *:nth-child(2) { animation-delay: 0.1s; }
+.stagger > *:nth-child(3) { animation-delay: 0.15s; }
+.stagger > *:nth-child(4) { animation-delay: 0.2s; }
+.stagger > *:nth-child(5) { animation-delay: 0.25s; }
+.stagger > *:nth-child(6) { animation-delay: 0.3s; }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading-screen">
+  <div class="loader-ring"></div>
+  <p class="loader-msg" id="loader-msg">Procesando pipeline...</p>
+</div>
+
+<!-- UPLOAD SCREEN -->
+<div id="upload-screen">
+  <div class="logo-area">
+    <div class="logo-badge">Ingeniería de Datos · Big Data · Pipeline</div>
+    <h1 class="main-title">Análisis Climático<br><span>Puno, Perú</span></h1>
+    <p class="main-sub">Dashboard de Business Intelligence construido sobre un pipeline de datos end-to-end. Carga tu archivo Excel para activar el sistema.</p>
+  </div>
+
+  <div class="upload-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+    <div class="upload-icon">
+      <svg viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/><path d="M13 3v5a1 1 0 001 1h5"/></svg>
+    </div>
+    <p class="upload-label">Cargar archivo de datos</p>
+    <p class="upload-hint">datos_climaticos_puno_2023_2025_final.xlsx</p>
+    <button class="upload-btn" onclick="event.stopPropagation(); document.getElementById('file-input').click()">Seleccionar archivo .xlsx</button>
+    <p style="margin-top:1rem;font-size:11px;color:var(--muted);">O arrastra el archivo aquí</p>
+    <input type="file" id="file-input" accept=".xlsx,.xls" onchange="handleFile(this.files[0])">
+  </div>
+
+  <div class="pipeline-preview">
+    <div class="pipe-node">
+      <div class="pipe-circle c1">01</div>
+      <div class="pipe-label">Ingestión<br>NoSQL/CSV</div>
+    </div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-node">
+      <div class="pipe-circle c2">02</div>
+      <div class="pipe-label">Almacena-<br>miento</div>
+    </div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-node">
+      <div class="pipe-circle c3">03</div>
+      <div class="pipe-label">Transfor-<br>mación</div>
+    </div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-node">
+      <div class="pipe-circle c4">04</div>
+      <div class="pipe-label">Orques-<br>tación</div>
+    </div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-node">
+      <div class="pipe-circle c5">05</div>
+      <div class="pipe-label">Valor<br>BI</div>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">Pipeline Climático · Puno, Perú</div>
+      <div class="topbar-meta" id="topbar-meta">3 810 m.s.n.m. · −15.84° lat · −70.02° lon</div>
+    </div>
+    <button class="reset-btn" onclick="resetDashboard()">← Nuevo archivo</button>
+  </div>
+
+  <div class="pipeline-strip">
+    <div class="pstep done">
+      <div class="pstep-num">Etapa 01</div>
+      <div class="pstep-name">Ingestión</div>
+      <div class="pstep-tech">Excel → JS runtime</div>
+    </div>
+    <div class="pstep done">
+      <div class="pstep-num">Etapa 02</div>
+      <div class="pstep-name">Almacenamiento</div>
+      <div class="pstep-tech">Data Lake / memoria</div>
+    </div>
+    <div class="pstep done">
+      <div class="pstep-num">Etapa 03</div>
+      <div class="pstep-name">Transformación</div>
+      <div class="pstep-tech">Agregación mensual</div>
+    </div>
+    <div class="pstep done">
+      <div class="pstep-num">Etapa 04</div>
+      <div class="pstep-name">Orquestación</div>
+      <div class="pstep-tech">Event-driven · XLSX.js</div>
+    </div>
+    <div class="pstep active">
+      <div class="pstep-num">Etapa 05</div>
+      <div class="pstep-name">Valor (BI)</div>
+      <div class="pstep-tech">Dashboard interactivo</div>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- METADATA -->
+    <div class="meta-grid stagger" id="meta-grid" style="margin-bottom:1.5rem;"></div>
+
+    <!-- KPIs -->
+    <div class="section-head" style="margin-bottom:0.75rem;">
+      <h2 class="section-title">Indicadores clave</h2>
+      <div class="filter-tabs">
+        <button class="ftab active" onclick="setYear('all',this)">2023–2025</button>
+        <button class="ftab" onclick="setYear(2023,this)">2023</button>
+        <button class="ftab" onclick="setYear(2024,this)">2024</button>
+        <button class="ftab" onclick="setYear(2025,this)">2025</button>
+      </div>
+    </div>
+    <div class="kpi-grid stagger" id="kpi-grid"></div>
+
+    <!-- CHARTS ROW 1 -->
+    <div class="section-head">
+      <h2 class="section-title">Temperatura y precipitación mensual</h2>
+    </div>
+    <div class="charts-grid-2" style="margin-bottom:2rem;">
+      <div class="chart-card">
+        <p class="chart-card-title">Temperatura media mensual (°C)</p>
+        <p class="chart-card-sub">Promedio por mes · comparativa entre años</p>
+        <div class="chart-legend" id="leg-temp"></div>
+        <div style="position:relative;height:240px;"><canvas id="c-temp" role="img" aria-label="Temperatura mensual promedio en Puno 2023-2025">Temperatura varía entre 7°C en julio y 14°C en enero.</canvas></div>
+      </div>
+      <div class="chart-card">
+        <p class="chart-card-title">Precipitación mensual acumulada (mm)</p>
+        <p class="chart-card-sub">Suma mensual · estacionalidad clara</p>
+        <div class="chart-legend" id="leg-precip"></div>
+        <div style="position:relative;height:240px;"><canvas id="c-precip" role="img" aria-label="Precipitación mensual en Puno 2023-2025">Mayor lluvia en enero y diciembre, mínima en julio.</canvas></div>
+      </div>
+    </div>
+
+    <!-- CHARTS ROW 2 -->
+    <div class="section-head">
+      <h2 class="section-title">Humedad, radiación y viento</h2>
+    </div>
+    <div class="charts-grid-2" style="margin-bottom:2rem;">
+      <div class="chart-card">
+        <p class="chart-card-title">Humedad relativa (%)</p>
+        <p class="chart-card-sub">Promedio mensual · ciclo lluvioso vs seco</p>
+        <div class="chart-legend" id="leg-hum"></div>
+        <div style="position:relative;height:220px;"><canvas id="c-hum" role="img" aria-label="Humedad relativa mensual">Humedad mayor en época lluviosa dic-mar.</canvas></div>
+      </div>
+      <div class="chart-card">
+        <p class="chart-card-title">Radiación solar (W/m²)</p>
+        <p class="chart-card-sub">Promedio mensual · inversamente correlacionada con lluvia</p>
+        <div class="chart-legend" id="leg-rad"></div>
+        <div style="position:relative;height:220px;"><canvas id="c-rad" role="img" aria-label="Radiación solar mensual">Mayor radiación en época seca jun-ago.</canvas></div>
+      </div>
+    </div>
+
+    <!-- WIDE CHARTS -->
+    <div class="section-head">
+      <h2 class="section-title">Análisis extendido</h2>
+    </div>
+    <div class="charts-grid-wide">
+      <div class="chart-card">
+        <p class="chart-card-title">Temperatura vs precipitación — correlación inversa</p>
+        <p class="chart-card-sub">Eje Y izq = temperatura (°C) · Eje Y der = precipitación (mm) · todos los años</p>
+        <div style="position:relative;height:260px;"><canvas id="c-combo" role="img" aria-label="Correlación temperatura precipitación">La temperatura sube cuando la lluvia baja.</canvas></div>
+      </div>
+      <div class="chart-card">
+        <p class="chart-card-title">Velocidad del viento (km/h)</p>
+        <p class="chart-card-sub">Promedio mensual por año · vientos fuertes en época seca</p>
+        <div class="chart-legend" id="leg-viento"></div>
+        <div style="position:relative;height:260px;"><canvas id="c-viento" role="img" aria-label="Velocidad viento mensual">Viento más fuerte en junio y julio.</canvas></div>
+      </div>
+    </div>
+
+    <!-- SEASONAL TABLE -->
+    <div class="section-head" style="margin-top:2rem;">
+      <h2 class="section-title">Resumen estacional por mes (promedio 2023–2025)</h2>
+    </div>
+    <div class="chart-card" style="margin-bottom:2rem; overflow-x:auto;">
+      <table class="season-table" id="season-table">
+        <thead>
+          <tr>
+            <th>Mes</th><th>Estación</th>
+            <th>Temp. (°C)</th><th>Precip. (mm)</th>
+            <th>Humedad (%)</th><th>Radiación (W/m²)</th><th>Viento (km/h)</th>
+          </tr>
+        </thead>
+        <tbody id="season-tbody"></tbody>
+      </table>
+    </div>
+
+  </div><!-- /main -->
+
+  <div class="dash-footer">
+    Pipeline de Datos Climáticos · Puno, Perú (3 810 m.s.n.m.) · Curso: Ingeniería de Datos y Big Data · Maestría en Ingeniería Estadística
+  </div>
+</div><!-- /dashboard -->
+
+<script>
+const MONTHS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const COLORS = { 2023:'#63b3ed', 2024:'#f6ad55', 2025:'#68d391' };
+const BDASH  = { 2023:[4,4],     2024:[6,2],     2025:[2,2] };
+const YEARS  = [2023,2024,2025];
+
+let ALL_DATA = [];     // raw daily rows
+let MONTHLY  = [];     // aggregated monthly
+let activeYear = 'all';
+let charts = {};
+
+// ─── FILE HANDLING ───────────────────────────────────────────
+const dropZone = document.getElementById('drop-zone');
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drag-over'); handleFile(e.dataTransfer.files[0]); });
+
+function handleFile(file) {
+  if (!file) return;
+  showLoading('Leyendo archivo Excel...');
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      setLoaderMsg('Parseando datos...');
+      const wb = XLSX.read(e.target.result, { type:'array', cellDates:true });
+      const ws = wb.Sheets['Datos Diarios'];
+      const raw = XLSX.utils.sheet_to_json(ws, { header:1 });
+      // find data rows (skip title + header)
+      let headerIdx = raw.findIndex(r => r[0] && String(r[0]).toLowerCase().includes('fecha'));
+      if(headerIdx < 0) headerIdx = 1;
+      const rows = raw.slice(headerIdx + 1).filter(r => r[0]);
+      setLoaderMsg('Transformando pipeline...');
+      ALL_DATA = rows.map(r => ({
+        fecha: r[0],
+        anio: Number(r[1]) || new Date(r[0]).getFullYear(),
+        mes:  r[0] instanceof Date ? r[0].getMonth()+1 : parseInt(String(r[0]).split('-')[1]),
+        temp:   +parseFloat(r[2]||0).toFixed(2),
+        precip: +parseFloat(r[3]||0).toFixed(2),
+        hum:    +parseFloat(r[4]||0).toFixed(2),
+        rad:    +parseFloat(r[5]||0).toFixed(2),
+        viento: +parseFloat(r[6]||0).toFixed(2),
+      })).filter(d => !isNaN(d.temp) && d.anio >= 2020);
+      setLoaderMsg('Generando dashboard...');
+      aggregateMonthly();
+      setTimeout(() => { hideLoading(); buildDashboard(); }, 400);
+    } catch(err) {
+      hideLoading();
+      alert('Error procesando el archivo: ' + err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function aggregateMonthly() {
+  MONTHLY = [];
+  YEARS.forEach(y => {
+    for(let m=1; m<=12; m++) {
+      const rows = ALL_DATA.filter(d=>d.anio===y && d.mes===m);
+      if(!rows.length) return;
+      const avg = f => +(rows.reduce((s,r)=>s+r[f],0)/rows.length).toFixed(2);
+      const sum = f => +(rows.reduce((s,r)=>s+r[f],0)).toFixed(1);
+      MONTHLY.push({ anio:y, mes:m,
+        temp:avg('temp'), precip:sum('precip'),
+        hum:avg('hum'), rad:avg('rad'), viento:avg('viento') });
+    }
+  });
+}
+
+// ─── DASHBOARD BUILD ─────────────────────────────────────────
+function buildDashboard() {
+  document.getElementById('upload-screen').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  buildMeta();
+  buildKPIs('all');
+  buildAllCharts();
+  buildSeasonTable();
+}
+
+function buildMeta() {
+  const total = ALL_DATA.length;
+  const years = [...new Set(ALL_DATA.map(d=>d.anio))].sort();
+  const items = [
+    ['Ubicación','Puno, Perú'],
+    ['Coordenadas','−15.84° lat · −70.02° lon'],
+    ['Altitud','3 810 m.s.n.m.'],
+    ['Período', years[0]+' – '+years[years.length-1]],
+    ['Registros totales', total.toLocaleString('es-PE')+' días'],
+    ['Variables','Temp · Precip · Humedad · Radiación · Viento'],
+    ['Frecuencia','Diaria'],
+    ['Procesado con','XLSX.js · Chart.js · Pipeline JS'],
+  ];
+  document.getElementById('meta-grid').innerHTML = items.map(([k,v])=>`
+    <div class="meta-row">
+      <span class="meta-key">${k}</span>
+      <span class="meta-val">${v}</span>
+    </div>`).join('');
+  document.getElementById('topbar-meta').textContent =
+    `${total.toLocaleString('es-PE')} registros · ${years.join(', ')} · 5 variables`;
+}
+
+function getFiltered(year) {
+  return year === 'all' ? MONTHLY : MONTHLY.filter(d=>d.anio===year);
+}
+
+function buildKPIs(year) {
+  const d = getFiltered(year);
+  const all = year==='all' ? ALL_DATA : ALL_DATA.filter(r=>r.anio===year);
+  const avg = f => (d.reduce((s,r)=>s+r[f],0)/d.length).toFixed(1);
+  const totalP = d.reduce((s,r)=>s+r.precip,0).toFixed(0);
+  const minT = Math.min(...all.map(r=>r.temp)).toFixed(1);
+  const maxT = Math.max(...all.map(r=>r.temp)).toFixed(1);
+  document.getElementById('kpi-grid').innerHTML = `
+    <div class="kpi k1"><div class="kpi-label">Temp. media</div><div class="kpi-val">${avg('temp')}</div><div class="kpi-unit">°C promedio</div></div>
+    <div class="kpi k2"><div class="kpi-label">Rango térmico</div><div class="kpi-val" style="font-size:1.4rem;">${minT}–${maxT}</div><div class="kpi-unit">°C min / max</div></div>
+    <div class="kpi k3"><div class="kpi-label">Precipitación</div><div class="kpi-val">${totalP}</div><div class="kpi-unit">mm total período</div></div>
+    <div class="kpi k4"><div class="kpi-label">Humedad media</div><div class="kpi-val">${avg('hum')}</div><div class="kpi-unit">% relativa</div></div>
+    <div class="kpi k5"><div class="kpi-label">Radiación solar</div><div class="kpi-val">${avg('rad')}</div><div class="kpi-unit">W/m² promedio</div></div>
+    <div class="kpi k6"><div class="kpi-label">Viento medio</div><div class="kpi-val">${avg('viento')}</div><div class="kpi-unit">km/h</div></div>
+  `;
+}
+
+// ─── CHARTS ──────────────────────────────────────────────────
+const BASE_OPTS = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: { legend:{display:false}, tooltip:{ mode:'index', intersect:false,
+    backgroundColor:'rgba(17,24,39,0.95)', titleColor:'#e2e8f0', bodyColor:'#a0aec0',
+    borderColor:'rgba(99,179,237,0.2)', borderWidth:1, padding:10 }},
+  scales: {
+    x: { ticks:{color:'#718096', font:{size:10}, maxRotation:0},
+         grid:{color:'rgba(99,179,237,0.04)'} },
+    y: { ticks:{color:'#718096', font:{size:10}},
+         grid:{color:'rgba(99,179,237,0.06)'} }
+  }
+};
+
+function lineDS(year, data, dashed) {
+  return {
+    label: String(year), data,
+    borderColor: COLORS[year],
+    backgroundColor: COLORS[year]+'18',
+    borderWidth: 2,
+    tension: 0.35,
+    pointRadius: 3,
+    pointHoverRadius: 6,
+    borderDash: dashed ? BDASH[year] : undefined,
+    fill: false,
+  };
+}
+
+function buildLegend(elId, year) {
+  const yrs = year==='all' ? YEARS : [year];
+  document.getElementById(elId).innerHTML = yrs.map(y=>`
+    <span class="cl-item">
+      <span class="cl-dot" style="background:${COLORS[y]}"></span>${y}
+    </span>`).join('');
+}
+
+function getMonthlyByField(year, field) {
+  const yrs = year==='all' ? YEARS : [year];
+  return yrs.map(y => {
+    const rows = MONTHLY.filter(d=>d.anio===y).sort((a,b)=>a.mes-b.mes);
+    return lineDS(y, rows.map(r=>r[field]));
+  });
+}
+
+function destroyChart(id) { if(charts[id]) { charts[id].destroy(); delete charts[id]; } }
+
+function makeLineChart(id, datasets, yMin, yMax, yLabel) {
+  destroyChart(id);
+  const opts = JSON.parse(JSON.stringify(BASE_OPTS));
+  opts.scales.y.min = yMin; opts.scales.y.max = yMax;
+  if(yLabel) opts.scales.y.ticks.callback = v => v + yLabel;
+  charts[id] = new Chart(document.getElementById(id), {
+    type:'line', data:{ labels:MONTHS, datasets },
+    options: opts
+  });
+}
+
+function buildAllCharts() {
+  const y = activeYear;
+  buildLegend('leg-temp', y); buildLegend('leg-precip', y);
+  buildLegend('leg-hum', y);  buildLegend('leg-rad', y);
+  buildLegend('leg-viento', y);
+
+  makeLineChart('c-temp',   getMonthlyByField(y,'temp'),   4, 18, '°C');
+  makeLineChart('c-precip', getMonthlyByField(y,'precip'), 0, 280, ' mm');
+  makeLineChart('c-hum',    getMonthlyByField(y,'hum'),   40, 85, '%');
+  makeLineChart('c-rad',    getMonthlyByField(y,'rad'),  150, 295, ' W/m²');
+  makeLineChart('c-viento', getMonthlyByField(y,'viento'), 6, 18, ' km/h');
+  buildComboChart();
+}
+
+function buildComboChart() {
+  destroyChart('c-combo');
+  // average across years
+  const avg3 = (m, field) => {
+    const vals = YEARS.map(y => { const r=MONTHLY.find(d=>d.anio===y&&d.mes===m); return r?r[field]:null; }).filter(v=>v!=null);
+    return vals.length ? +(vals.reduce((s,v)=>s+v,0)/vals.length).toFixed(2) : null;
+  };
+  const tempAvg   = MONTHS.map((_,i)=>avg3(i+1,'temp'));
+  const precipAvg = MONTHS.map((_,i)=>avg3(i+1,'precip'));
+
+  charts['c-combo'] = new Chart(document.getElementById('c-combo'), {
+    data: {
+      labels: MONTHS,
+      datasets: [
+        { type:'line', label:'Temperatura (°C)', data:tempAvg,
+          borderColor:'#fc8181', backgroundColor:'rgba(252,129,129,0.08)',
+          borderWidth:2, tension:0.35, yAxisID:'yT',
+          pointRadius:4, pointHoverRadius:7 },
+        { type:'bar', label:'Precipitación (mm)', data:precipAvg,
+          backgroundColor:'rgba(99,179,237,0.25)', borderColor:'#63b3ed',
+          borderWidth:1, yAxisID:'yP' }
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:true, position:'top',
+        labels:{ color:'#a0aec0', font:{size:11}, boxWidth:10, padding:16 }},
+        tooltip:{ mode:'index', intersect:false, backgroundColor:'rgba(17,24,39,0.95)',
+          titleColor:'#e2e8f0', bodyColor:'#a0aec0', borderColor:'rgba(99,179,237,0.2)',
+          borderWidth:1, padding:10 }},
+      scales:{
+        x:{ ticks:{color:'#718096',font:{size:10}}, grid:{color:'rgba(99,179,237,0.04)'} },
+        yT:{ position:'left', min:4, max:18, ticks:{color:'#fc8181',font:{size:10},callback:v=>v+'°C'},
+             grid:{color:'rgba(99,179,237,0.06)'} },
+        yP:{ position:'right', min:0, max:280, ticks:{color:'#63b3ed',font:{size:10},callback:v=>v+' mm'},
+             grid:{display:false} }
+      }
+    }
+  });
+}
+
+// ─── SEASON TABLE ────────────────────────────────────────────
+const SEASON = m => {
+  if([12,1,2,3].includes(m)) return ['Lluviosa','lluvia'];
+  if([6,7,8,9].includes(m)) return ['Seca','seca'];
+  return ['Transición','trans'];
+};
+
+function buildSeasonTable() {
+  const avg3 = (m, f) => {
+    const vals = YEARS.map(y=>{ const r=MONTHLY.find(d=>d.anio===y&&d.mes===m); return r?r[f]:null; }).filter(v=>v!=null);
+    return vals.length ? (vals.reduce((s,v)=>s+v,0)/vals.length).toFixed(1) : '—';
+  };
+  document.getElementById('season-tbody').innerHTML = MONTHS.map((name,i)=>{
+    const m = i+1;
+    const [sname, sclass] = SEASON(m);
+    return `<tr>
+      <td class="val">${name}</td>
+      <td><span class="season-badge ${sclass}">${sname}</span></td>
+      <td class="val">${avg3(m,'temp')}</td>
+      <td class="val">${avg3(m,'precip')}</td>
+      <td class="val">${avg3(m,'hum')}</td>
+      <td class="val">${avg3(m,'rad')}</td>
+      <td class="val">${avg3(m,'viento')}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ─── CONTROLS ────────────────────────────────────────────────
+function setYear(year, btn) {
+  activeYear = year;
+  document.querySelectorAll('.ftab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  buildKPIs(year);
+  buildAllCharts();
+}
+
+function resetDashboard() {
+  Object.values(charts).forEach(c=>c.destroy());
+  charts = {}; ALL_DATA = []; MONTHLY = []; activeYear = 'all';
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('upload-screen').style.display = 'flex';
+  document.getElementById('file-input').value = '';
+}
+
+function showLoading(msg) {
+  document.getElementById('loading-screen').style.display = 'flex';
+  document.getElementById('loader-msg').textContent = msg;
+}
+function setLoaderMsg(msg) { document.getElementById('loader-msg').textContent = msg; }
+function hideLoading() { document.getElementById('loading-screen').style.display = 'none'; }
+</script>
+</body>
+</html>
